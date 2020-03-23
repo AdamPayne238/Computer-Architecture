@@ -7,7 +7,13 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        # PC
+        self.pc = 0
+        # REGISTER
+        self.reg = [0] * 8
+        # RAM
+        self.ram = [0] * 256
+
 
     def load(self):
         """Load a program into memory."""
@@ -18,12 +24,12 @@ class CPU:
 
         program = [
             # From print8.ls8
-            0b10000010, # LDI R0,8
+            0b10000010,  # LDI R0,8
             0b00000000,
             0b00001000,
-            0b01000111, # PRN R0
+            0b01000111,  # PRN R0
             0b00000000,
-            0b00000001, # HLT
+            0b00000001,  # HLT
         ]
 
         for instruction in program:
@@ -60,6 +66,43 @@ class CPU:
 
         print()
 
+    # Memory Address Register (MAR)
+    # Memory Data Register (MDR).
+
+    def ram_read(self, MAR):  # should accept the address to read and return the value stored there.
+        return self.ram[MAR]
+
+    def ram_write(self, MAR, MDR):  # should accept a value to write, and the address to write it to.
+        self.ram[MAR] = MDR
+
     def run(self):
         """Run the CPU."""
-        pass
+
+        LDI = 0b10000010
+        PRN = 0b01000111
+        HLT = 0b00000001
+
+        running = True
+
+        while running:
+            command = self.ram[self.pc]
+
+            # LDI - load "immediate", store a value in a register, or "set this register to this value".
+            if command == LDI:
+                opperand_a = self.ram_read(self.pc + 1)
+                opperand_b = self.ram_read(self.pc + 2)
+                self.reg[opperand_a] += self.reg[opperand_b]
+                self.pc += 3
+
+            # PRN - a pseudo-instruction that prints the numeric value stored in a register.
+            elif command == PRN:
+                num = self.ram[self.pc + 1]
+                print(num)
+                self.pc += 2
+
+            # HLT - halt the CPU and exit the emulator.
+            elif command == HLT:
+                running = False
+                self.pc += 1
+
+
