@@ -91,13 +91,13 @@ class CPU:
             if command == LDI:
                 opperand_a = self.ram_read(self.pc + 1)
                 opperand_b = self.ram_read(self.pc + 2)
-                self.reg[opperand_a] += self.reg[opperand_b]
+                self.reg[opperand_a] += opperand_b
                 self.pc += 3
 
             # PRN - a pseudo-instruction that prints the numeric value stored in a register.
             elif command == PRN:
                 num = self.ram[self.pc + 1]
-                print(num)
+                print(self.reg[num])
                 self.pc += 2
 
             # HLT - halt the CPU and exit the emulator.
