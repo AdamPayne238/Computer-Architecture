@@ -2,6 +2,7 @@
 
 import sys
 
+
 class CPU:
     """Main CPU class."""
 
@@ -14,28 +15,30 @@ class CPU:
         # RAM
         self.ram = [0] * 256
 
-
     def load(self):
         """Load a program into memory."""
+        try:
+            address = 0
 
-        address = 0
+            with open(sys.argv[1]) as f:
+                for line in f:
+                    # Ignore comments
+                    comment_split = line.split('#')
+                    # print("commentsplit", comment_split)
+                    # Strip out the white space
+                    num = comment_split[0].strip()
+                    print("num", num)
+                    # Ignore blank lines
+                    if num == "":
+                        continue
 
-        # For now, we've just hardcoded a program:
+                    val = int(num, 2)
+                    self.ram[address] = val
+                    address += 1
 
-        program = [
-            # From print8.ls8
-            0b10000010,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001,  # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
-
+        except FileNotFoundError:
+            print("File not found")
+            sys.exit(2)
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -63,12 +66,10 @@ class CPU:
 
         for i in range(8):
             print(" %02X" % self.reg[i], end='')
-
         print()
 
     # Memory Address Register (MAR)
     # Memory Data Register (MDR).
-
     def ram_read(self, MAR):  # should accept the address to read and return the value stored there.
         return self.ram[MAR]
 
@@ -81,17 +82,19 @@ class CPU:
         LDI = 0b10000010
         PRN = 0b01000111
         HLT = 0b00000001
+        MUL = 0b10100010
 
         running = True
 
         while running:
             command = self.ram[self.pc]
-
+            # print('command', type(command))
+            # print(type(LDI))
             # LDI - load "immediate", store a value in a register, or "set this register to this value".
             if command == LDI:
-                opperand_a = self.ram_read(self.pc + 1)
-                opperand_b = self.ram_read(self.pc + 2)
-                self.reg[opperand_a] += opperand_b
+                operand_a = self.ram_read(self.pc + 1)
+                operand_b = self.ram_read(self.pc + 2)
+                self.reg[operand_a] += operand_b
                 self.pc += 3
 
             # PRN - a pseudo-instruction that prints the numeric value stored in a register.
@@ -100,9 +103,18 @@ class CPU:
                 print(self.reg[num])
                 self.pc += 2
 
+            # MUL - # Expected output: 72
+            elif command == MUL:
+                operand_a = self.ram_read(self.pc + 1)
+                operand_b = self.ram_read(self.pc + 2)
+                self.reg[operand_a] = self.reg[operand_a] * self.reg[operand_b]
+                self.pc += 3
+
             # HLT - halt the CPU and exit the emulator.
             elif command == HLT:
                 running = False
                 self.pc += 1
 
-
+            else:
+                print(f'command not found')
+                sys.exit(1)
