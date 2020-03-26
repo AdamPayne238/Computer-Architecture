@@ -14,6 +14,7 @@ class CPU:
         self.reg = [0] * 8
         # RAM
         self.ram = [0] * 256
+        self.SP = 7
 
     def load(self):
         """Load a program into memory."""
@@ -83,6 +84,8 @@ class CPU:
         PRN = 0b01000111
         HLT = 0b00000001
         MUL = 0b10100010
+        PUSH = 0b01000101
+        POP = 0b01000110
 
         running = True
 
@@ -109,6 +112,22 @@ class CPU:
                 operand_b = self.ram_read(self.pc + 2)
                 self.reg[operand_a] = self.reg[operand_a] * self.reg[operand_b]
                 self.pc += 3
+
+            # PUSH
+            elif command == PUSH:
+                reg = self.ram[self.pc + 1]
+                val = self.reg[reg]
+                self.SP -= 1
+                self.ram[self.reg[self.SP]] = val
+                self.pc += 2
+
+            # POP
+            elif command == POP:
+                reg = self.ram[self.pc + 1]
+                val = self.ram[self.reg[self.SP]]
+                self.reg[reg] = val
+                self.reg[self.SP] += 1
+                self.pc += 2
 
             # HLT - halt the CPU and exit the emulator.
             elif command == HLT:
