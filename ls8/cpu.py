@@ -157,6 +157,22 @@ class CPU:
                 self.alu('ADD', self.ram_read(self.pc + 1), self.ram_read(self.pc + 2))
                 self.pc += 3
 
+            # CMP
+            elif command == CMP:
+                pass
+
+            # JMP
+            elif command == JMP:
+                pass
+
+            # JEQ
+            elif command == JEQ:
+                pass
+
+            # JNE
+            elif command == JNE:
+                pass
+
             # HLT - halt the CPU and exit the emulator.
             elif command == HLT:
                 running = False
