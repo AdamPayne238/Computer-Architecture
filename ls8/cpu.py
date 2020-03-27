@@ -14,6 +14,7 @@ class CPU:
         self.reg = [0] * 8
         # RAM
         self.ram = [0] * 256
+        # Stack Pointer
         self.SP = 7
 
     def load(self):
@@ -93,8 +94,7 @@ class CPU:
         JMP = 0b01010100
         JEQ = 0b01010101
         JNE = 0b01010110
-
-
+        EF = 0
 
         running = True
 
@@ -157,27 +157,37 @@ class CPU:
                 self.alu('ADD', self.ram_read(self.pc + 1), self.ram_read(self.pc + 2))
                 self.pc += 3
 
-            # CMP
+            # CMP - Compare
             elif command == CMP:
-                pass
+                self.Flag = CMP
+                if self.reg[self.ram_read(self.pc + 1)] == self.reg[self.ram_read(self.pc + 2)]:
+                    EF = 1
+                self.pc += 3
 
-            # JMP
+            # JMP - Jump Command
             elif command == JMP:
-                pass
+                self.pc = self.reg[self.ram_read(self.pc + 1)]
 
-            # JEQ
+            # JEQ - Jump equal
             elif command == JEQ:
-                pass
+                if EF == 1:
+                    self.pc = self.reg[self.ram_read(self.pc + 1)]
+                else:
+                    self.pc += 2
 
-            # JNE
+            # JNE = Jump not equal
             elif command == JNE:
-                pass
+                if EF == 0:
+                    self.pc = self.reg[self.ram_read(self.pc + 1)]
+                else:
+                    self.pc += 2
 
             # HLT - halt the CPU and exit the emulator.
             elif command == HLT:
                 running = False
                 self.pc += 1
 
+            # Command not found = exit
             else:
                 print(f'command not found')
                 sys.exit(1)
