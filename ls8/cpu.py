@@ -86,6 +86,9 @@ class CPU:
         MUL = 0b10100010
         PUSH = 0b01000101
         POP = 0b01000110
+        CALL = 0b01010000
+        RET = 0b00010001
+        ADD = 0b10100000
 
         running = True
 
@@ -97,7 +100,7 @@ class CPU:
             if command == LDI:
                 operand_a = self.ram_read(self.pc + 1)
                 operand_b = self.ram_read(self.pc + 2)
-                self.reg[operand_a] += operand_b
+                self.reg[operand_a] = operand_b
                 self.pc += 3
 
             # PRN - a pseudo-instruction that prints the numeric value stored in a register.
@@ -118,16 +121,35 @@ class CPU:
                 reg = self.ram[self.pc + 1]
                 val = self.reg[reg]
                 self.SP -= 1
-                self.ram[self.reg[self.SP]] = val
+                self.ram[self.SP] = val
                 self.pc += 2
 
             # POP
             elif command == POP:
                 reg = self.ram[self.pc + 1]
-                val = self.ram[self.reg[self.SP]]
+                val = self.ram[self.SP]
                 self.reg[reg] = val
-                self.reg[self.SP] += 1
+                self.SP += 1
                 self.pc += 2
+
+            # CALL
+            elif command == CALL:
+                val = self.pc + 2
+                reg = self.ram[self.pc + 1]
+                sub = self.reg[reg]
+                self.reg[self.SP] -= 1
+                self.ram[self.reg[self.SP]] = val
+                self.pc = sub
+
+            # RET
+            elif command == RET:
+                pc = self.reg[self.SP]
+                self.pc = self.ram[pc]
+
+            # ADD
+            elif command == ADD:
+                self.alu('ADD', self.ram_read(self.pc + 1), self.ram_read(self.pc + 2))
+                self.pc += 3
 
             # HLT - halt the CPU and exit the emulator.
             elif command == HLT:
